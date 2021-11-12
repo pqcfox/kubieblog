@@ -1,0 +1,22 @@
+# Setup
+title:               kubie's notes
+tagline:             'stupid crypto tricks and math'
+description:         'crypto, math, and hardware explained poorly'
+url:                 https://kubie.xyz
+baseurl:             ''
+paginate:            5
+permalink:           pretty
+
+# About/contact
+author:
+  name:              Katie Watson
+  url:               https://twitter.com/lessgradedalg
+  email:             katiewatsonag@gmail.com
+
+# Gems
+plugins:
+  - jekyll-paginate
+
+# Custom vars
+version:             1.1.0
+google_analytics_id: #UA-XXXX-Y

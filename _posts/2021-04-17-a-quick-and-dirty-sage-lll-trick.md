@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A quick and dirty Sage LLL trick
+title: A Quick and Dirty Sage LLL trick
 ---
 
 For my first "actual" post on this blog, I'll share a trick I learned through a remarkable headache.

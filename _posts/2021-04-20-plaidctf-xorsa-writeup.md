@@ -5,7 +5,7 @@ title: PlaidCTF XORSA Writeup
 
 Much of math and cryptography to me is beautiful because of the story it tells. Yesterday, before sitting down and solving this CTF challenge, I'd been having an incredibly rough day. Fortuantely, the girl who I absolutely adore knew I was having a rough time and took me out for easily the best date of my life. I was moved nearly to tears. 
 
-This article--and, why not, this whole blog--is dedicated to her and her brilliant, inventive, hilarious, and kind spirit. Thank you, hun, for helping me tell a better story--in particular one with you in it.
+This article is dedicated to her and her brilliant, inventive, hilarious, and kind spirit. Thank you, hun, for helping me tell a better story--in particular one with you in it.
 
 ---
 

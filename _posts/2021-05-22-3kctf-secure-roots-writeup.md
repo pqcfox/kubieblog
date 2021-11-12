@@ -84,18 +84,17 @@ if __name__ == '__main__':
 
 On first glance, this appears to be a login system that uses some kind of signature to identify users. To construct a signature for a user, it takes a message (the user’s username) and performs a SHA256 hash of it with random padding, which is then passed through the `self.decrypt()` function to obtain a signature. On startup, the user is given a signature for the `Guest` account consisting of the signature itself $$r$$ and the output $$u$$ of `bytes_to_long` applied to the padding To get the flag, the user has to pass in a signature instead for the `3k-admin` account, then decrypt an encoded flag from `get_flag()`.
 
-Upon inspection, we find that this looks like an implementation of the Rabin cryptosystem. Indeed, everything seems to line up: encryption is squaring mod n=p⋅q
+Upon inspection, we find that this looks like an implementation of the [Rabin cryptosystem](https://en.wikipedia.org/wiki/Rabin_cryptosystem). Indeed, everything seems to line up: encryption is squaring mod $$n = p \cdot q$$, decryption is taking a modular square root using the Chinese Remainder Theorem trick, etc. In fact, this appears to be verbatim the algorithm on Wikipedia, except for the fact that we always pick one of the four roots--in the notation of the above link,
 
-, decryption is taking a modular square root using the Chinese Remainder Theorem trick, etc. In fact, this appears to be verbatim the algorithm on Wikipedia, except for the fact that we always pick one of the four roots–in the notation of the above link,
-r1=(yp⋅p⋅mq+yq⋅q⋅mp)modn
+$$r_1 = (y_p \cdot p \cdot m_q + y_q \cdot q \cdot m_p) \bmod n$$
 
 where
-mp=c1/4(p+1)modp and mp=c1/4(q+1)modq,
 
-and yp⋅p+yq⋅q=1
-. Ignoring the fanciness with yp and yq, we are simply taking r1 to be the unique value mod n=p⋅q which equals mpmodp and mqmodq.
+$$m_p = c^{1/4(p+1)} \bmod p \quad \text{and} \quad m_p = c^{1/4(q+1)} \bmod q,$$
 
-Now, we claim $$m_p$$ is a square root of $$m \bmod p$$ when $$m \bmod p$$ is a square. The reasoning is outlined [in this handy MSE post](https://math.stackexchange.com/questions/1273690/when-p-3-pmod-4-show-that-ap1-4-pmod-p-is-a-square-root-of-a): since $$m \bmod p$$ is a square, we have the Legendre symbol $$\left(\frac{m}{p}\right) = m^{(p−1)/2} = 1 \bmod p$$, and multiplying through by $$m$$ we get $$m^{(p+1)/2} = m \bmod p$$, so indeed $$m_p^22 = m \bmod p$$.
+and $$y_p \cdot p + y_q \cdot q=1$$. Ignoring the fanciness with $$y_p$$ and $$y_q$$, we are simply taking $$r_1$$ to be the unique value mod $$n=p \cdot q$$ which equals $$m_p \bmod p$$ and $$m_q \bmod q$$.
+
+Now, we claim $$m_p$$ is a square root of $$m \bmod p$$ when $$m \bmod p$$ is a square. The reasoning is outlined [in this handy MSE post](https://math.stackexchange.com/questions/1273690/when-p-3-pmod-4-show-that-ap1-4-pmod-p-is-a-square-root-of-a): since $$m \bmod p$$ is a square, we have the Legendre symbol $$\left(\frac{m}{p}\right) = m^{(p−1)/2} = 1 \bmod p$$, and multiplying through by $$m$$ we get $$m^{(p+1)/2} = m \bmod p$$, so indeed $$m_p^2 = m \bmod p$$.
 
 Digging around some more though reveals what might be wrong with this implementation of Rabin signatures: in particular, page 8 of [this chapter in Steven Galbraith’s book](https://www.math.auckland.ac.nz/~sgal018/crypto-book/ch24.pdf) states that we need to make sure our signed message $$m$$ is a square before attempting to compute a square root, replacing it with $$n−m$$ if this isn’t the case (one will always be a square). Indeed, if $$m$$ isn’t a square, then $$r_1$$ clearly won’t be the modular square root of $$m$$. We can verify this is a problem, as attempting to log in with `Guest`’s given credentials fails exactly half the time.
 
@@ -103,8 +102,11 @@ So if $$m$$ has no modular square root, then what is $$r_1$$? Well, if $$m \bmod
 
 $$\left(\frac{m}{p}\right) = m^{(p−1)/2} = −1.$$
 
-Then $$m_p^2 = m^{(p+1)/2} = −m \bmod p$$,
-, i.e. $$m_p$$ is a modular square root of $$−m \bmod p$$. Here’s the key: in this case, $$r_1^2 \bmod p = −m \bmod p$$, meaning $$p \mid r_1^2 + m$$. Since $$n = p \cdot q$$, we then can recover $$p$$ by computing $$p = \operatorname{gcd}(r_1^2 + m, n)$$. and $$q = n / p$$. Having factored $$n$$, we now have the private key for not only the Rabin signatures but also the `get_flag()` secret, which is RSA encrypted with the same keys.
+Then $$m_p^2 = m^{(p+1)/2} = −m \bmod p$$, i.e. $$m_p$$ is a modular square root of $$−m \bmod p$$. Here’s the key: in this case, $$r_1^2 \bmod p = −m \bmod p$$, meaning $$p \mid r_1^2 + m$$. Since $$n = p \cdot q$$, we then can recover $$p$$ by computing 
+
+$$p = \operatorname{gcd}(r_1^2 + m, n)$$
+
+and $$q = n / p$$. Having factored $$n$$, we now have the private key for not only the Rabin signatures but also the `get_flag()` secret, which is RSA encrypted with the same keys.
 
 To implement this, we note that when $$m \bmod p$$ is a square, the output of $$\operatorname{gcd}(r_1^2+m,n)$$ is almost certainly $$1$$, so we can simply keep making requests until the value of $$p$$ we obtain is not $$1$$. From there, since $$n = p \cdot q$$ is factored, we can simply create a signature for `3k-admin` using the functions from the challenge script, then use $$p$$ and $$q$$ to decrypt the RSA-encrypted flag.
 

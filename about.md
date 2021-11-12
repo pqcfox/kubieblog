@@ -9,6 +9,6 @@ I'm Katie, but mostly go by `kubie`. I do CTFs, play with hardware, study math, 
 kubie@foxbox$ cat fox.txt
 
 /\ /\
-(^-^)  <( let's break things! )
+(^-^)  <( let's find new ways to break things (responsibly)! )
 o # o
 ```
